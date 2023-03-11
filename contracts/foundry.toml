@@ -1,0 +1,14 @@
+[profile.default]
+src = 'src'
+out = 'out'
+ffi = true
+libs = ['lib']
+optimizer = true
+optimizer_runs = 999999
+# solc = "0.8.17"
+
+[profile.default.optimizer_details]
+constantOptimizer = true
+yul = true
+
+# See more config options https://github.com/foundry-rs/foundry/tree/master/config
