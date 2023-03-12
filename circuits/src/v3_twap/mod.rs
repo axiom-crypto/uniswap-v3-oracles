@@ -147,8 +147,8 @@ impl UniswapV3TwapCircuit {
         let gate = axiom.gate();
         let pow2 = gate.pow_of_two();
         let mut packed =
-            gate.mul_add(ctx, start_obs.block_number, Constant(pow2[4]), end_obs.block_number);
-        packed = gate.mul_add(ctx, start_obs.pool_address, Constant(pow2[8]), packed);
+            gate.mul_add(ctx, start_obs.block_number, Constant(pow2[32]), end_obs.block_number);
+        packed = gate.mul_add(ctx, start_obs.pool_address, Constant(pow2[64]), packed);
         drop(aux);
 
         for elt in iter::once(packed)

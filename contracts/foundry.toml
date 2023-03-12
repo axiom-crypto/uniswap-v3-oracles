@@ -12,3 +12,7 @@ constantOptimizer = true
 yul = true
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
+# fs_permissions = [{ access = "read", path = "./"}]
+
+[rpc_endpoints]
+mainnet = "${ETH_RPC_URL}"

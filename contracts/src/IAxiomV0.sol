@@ -54,4 +54,3 @@ interface IAxiomV0 {
     function isRecentBlockHashValid(uint32 blockNumber, bytes32 claimedBlockHash) external view returns (bool);
     function isBlockHashValid(BlockHashWitness calldata witness) external view returns (bool);
 }
-
