@@ -1,4 +1,4 @@
-use std::{env::set_var, iter};
+use std::{env::set_var, iter, sync::Arc};
 
 use axiom_scaffold::{
     axiom_eth::{
@@ -114,7 +114,7 @@ impl<F: Field> UniswapV3TwapOracle<F> for AxiomChip<F> {
 
 #[derive(Clone, Debug)]
 pub struct UniswapV3TwapCircuit {
-    pub provider: Provider<Http>,
+    pub provider: Arc<Provider<Http>>,
     pub pool_address: Address,
     pub start_block_number: u32,
     pub end_block_number: u32,

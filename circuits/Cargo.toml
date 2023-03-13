@@ -8,6 +8,7 @@ log = "0.4"
 env_logger = "0.10"
 rand_core = "0.6"
 clap = "4.1.8"
+clap-num = "1.0.2"
 
 axiom-scaffold = { git = "ssh://git@github.com/axiom-crypto/axiom-scaffold.git" }
 

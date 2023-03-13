@@ -22,6 +22,7 @@ library Oracle {
         bool initialized;
     }
 
+    /// @dev For testing purposes only
     /// @notice Returns Observation as it is laid out in EVM storage:
     /// concatenation of `initialized . secondsPerLiquidityCumulativeX128 . tickCumulative . blockTimestamp`
     function pack(Observation memory observation) public pure returns (bytes32 packed) {

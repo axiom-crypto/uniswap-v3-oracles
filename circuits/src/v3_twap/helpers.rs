@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axiom_scaffold::axiom_eth::{
     util::scheduler::{
         evm_wrapper::{EvmWrapper, SimpleTask},
@@ -54,9 +56,9 @@ impl Task for UniswapTwapTask {
 impl SimpleTask for UniswapTwapTask {
     type PreCircuit = UniswapV3TwapCircuit;
 
-    fn get_circuit(&self, provider: &Provider<Http>, _: Network) -> UniswapV3TwapCircuit {
+    fn get_circuit(&self, provider: Arc<Provider<Http>>, _: Network) -> UniswapV3TwapCircuit {
         UniswapV3TwapCircuit {
-            provider: provider.clone(),
+            provider,
             pool_address: self.pool_address,
             start_block_number: self.start_block_number,
             end_block_number: self.end_block_number,

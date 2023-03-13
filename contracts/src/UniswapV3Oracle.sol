@@ -7,8 +7,6 @@ import "./IAxiomV0.sol";
 import "./Oracle.sol";
 
 contract UniswapV3Oracle {
-    using Oracle for Oracle.Observation;
-
     // The public inputs and outputs of the ZK proof
     struct Instance {
         address poolAddress;
@@ -23,7 +21,8 @@ contract UniswapV3Oracle {
     address private axiomAddress;
     address private verifierAddress;
 
-    /// @notice Mapping between abi.encodePacked(address poolAddress, uint32 startBlockNumber, uint32 endBlockNumber) => keccak(abi.encodePacked(Oracle.Observation startObservation, Oracle.Observation endObservation)) where Oracle.Observation is packed to exactly 32 bytes
+    /// @notice Mapping between abi.encodePacked(address poolAddress, uint32 startBlockNumber, uint32 endBlockNumber) => keccak(abi.encodePacked(bytes32 startObservationPacked, bytes32 endObservationPacked)) where observationPacked is the packing of Oracle.Observation observation into 32 bytes: bytes32(bytes1(0x0) . secondsPerLiquidityCumulativeX128 . tickCumulative . blockTimestamp)
+    /// This is the same as how Oracle.Observation is laid out in EVM storage EXCEPT that we set initialized = false (for some gas optimization reasons)
     mapping(bytes28 => bytes32) public twapObservations;
 
     event Test(bytes28);
@@ -50,7 +49,7 @@ contract UniswapV3Oracle {
         });
     }
 
-    function getProofInstance(bytes calldata proof) internal pure returns (Instance memory instance) {
+    function getProofInstance(bytes calldata proof) internal pure returns (Instance memory instance, bytes32 startObservationPacked, bytes32 endObservationPacked) {
         // Public instances: total 7 field elements
         // 0: `pool_address . start_block_number . end_block_number` is `20 + 4 + 4 = 28` bytes, packed into a single field element
         // 1..3: `start_block_hash` (32 bytes) is split into two field elements (hi, lo u128)
@@ -71,6 +70,8 @@ contract UniswapV3Oracle {
         instance.endBlockHash = bytes32((uint256(fieldElements[3]) << 128) | uint128(uint256(fieldElements[4])));
         instance.startObservation = unpackObservation(uint256(fieldElements[5]));
         instance.endObservation = unpackObservation(uint256(fieldElements[6]));
+        startObservationPacked = fieldElements[5];
+        endObservationPacked = fieldElements[6];
     }
 
     function validateBlockHash(IAxiomV0.BlockHashWitness calldata witness) internal view {
@@ -85,7 +86,7 @@ contract UniswapV3Oracle {
         }
     }
 
-    /// @dev We provide the average tick and seconds weighted inverse liquidity for convenience, but return the full Observations in case developers want more fine-grained calculations of the oracle observations
+    /// @dev We provide the time weighted average tick and time weighted average inverse liquidity for convenience, but return the full Observations in case developers want more fine-grained calculations of the oracle observations
     function verifyUniswapV3TWAP(
         IAxiomV0.BlockHashWitness calldata startBlock,
         IAxiomV0.BlockHashWitness calldata endBlock,
@@ -94,12 +95,12 @@ contract UniswapV3Oracle {
         external
         returns (
             int56 tickTwap,
-            uint160 secondsWeightedInverseLiquidityX128,
+            uint160 twaInverseLiquidityX128,
             Oracle.Observation memory startObservation,
             Oracle.Observation memory endObservation
         )
     {
-        Instance memory instance = getProofInstance(proof);
+        (Instance memory instance, bytes32 startObservationPacked, bytes32 endObservationPacked) = getProofInstance(proof);
         // compare calldata vs proof instances:
         if (instance.startBlockNumber > instance.endBlockNumber) {
             revert("startBlockNumber <= endBlockNumber");
@@ -129,7 +130,8 @@ contract UniswapV3Oracle {
 
         twapObservations[bytes28(
             abi.encodePacked(instance.poolAddress, instance.startBlockNumber, instance.endBlockNumber)
-        )] = keccak256(abi.encodePacked(startObservation.pack(), endObservation.pack()));
+        )] = keccak256(abi.encodePacked(startObservationPacked, endObservationPacked));
+
         emit UniswapV3TwapProof(
             instance.poolAddress, instance.startBlockNumber, instance.endBlockNumber, startObservation, endObservation
         );
@@ -138,7 +140,7 @@ contract UniswapV3Oracle {
         // floor division
         tickTwap = (endObservation.tickCumulative - startObservation.tickCumulative) / int56(uint56(secondsElapsed));
         // floor division
-        secondsWeightedInverseLiquidityX128 = (
+        twaInverseLiquidityX128 = (
             endObservation.secondsPerLiquidityCumulativeX128 - startObservation.secondsPerLiquidityCumulativeX128
         ) / uint160(secondsElapsed);
     }
