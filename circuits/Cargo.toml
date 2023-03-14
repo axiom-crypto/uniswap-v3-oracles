@@ -3,6 +3,10 @@ name = "axiom-uniswap-oracles"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "v3_twap_server"
+required-features = ["server"]
+
 [dependencies]
 log = "0.4"
 env_logger = "0.10"
@@ -10,19 +14,24 @@ rand_core = "0.6"
 clap = "4.1.8"
 clap-num = "1.0.2"
 
-axiom-scaffold = { git = "ssh://git@github.com/axiom-crypto/axiom-scaffold.git" }
+axiom-scaffold = { git = "ssh://git@github.com/axiom-crypto/axiom-scaffold.git", default-features = false }
 
 ethers-core = { version = "1.0.2" }
 ethers-providers = { version = "1.0.2" }
 tokio = { version = "1.26", features = ["macros"] }
+
+serde = { version = "1.0", default-features = false, features = ["derive"], optional = true }
+rocket = { version = "0.4", optional = true }
+rocket_contrib = { version = "0.4", optional = true, default-features = false, features = ["json"]}
 
 [dev-dependencies]
 test-log = "0.2.11"
 ark-std = { version = "0.3.0", features = ["print-trace"] }
 
 [features]
-default = []
+default = ["axiom-scaffold/display"]
 production = ["axiom-scaffold/production"]
+server = ["dep:rocket", "dep:rocket_contrib", "dep:serde", "production"]
 
 [profile.dev]
 opt-level = 3

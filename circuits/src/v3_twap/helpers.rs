@@ -31,6 +31,10 @@ impl UniswapTwapTask {
     ) -> Self {
         Self { start_block_number, end_block_number, pool_address, network }
     }
+
+    pub fn network(&self) -> Network {
+        self.network
+    }
 }
 
 impl Task for UniswapTwapTask {
