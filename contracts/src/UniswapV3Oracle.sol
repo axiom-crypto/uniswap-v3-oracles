@@ -21,8 +21,11 @@ contract UniswapV3Oracle {
     address private axiomAddress;
     address private verifierAddress;
 
-    /// @notice Mapping between abi.encodePacked(address poolAddress, uint32 startBlockNumber, uint32 endBlockNumber) => keccak(abi.encodePacked(bytes32 startObservationPacked, bytes32 endObservationPacked)) where observationPacked is the packing of Oracle.Observation observation into 32 bytes: bytes32(bytes1(0x0) . secondsPerLiquidityCumulativeX128 . tickCumulative . blockTimestamp)
-    /// This is the same as how Oracle.Observation is laid out in EVM storage EXCEPT that we set initialized = false (for some gas optimization reasons)
+    /// @notice Mapping between abi.encodePacked(address poolAddress, uint32 startBlockNumber, uint32 endBlockNumber) 
+    ///         => keccak(abi.encodePacked(bytes32 startObservationPacked, bytes32 endObservationPacked)) where observationPacked 
+    ///         is the packing of Oracle.Observation observation into 32 bytes: 
+    ///         bytes32(bytes1(0x0) . secondsPerLiquidityCumulativeX128 . tickCumulative . blockTimestamp)
+    /// @dev    This is the same as how Oracle.Observation is laid out in EVM storage EXCEPT that we set initialized = false (for some gas optimization reasons)
     mapping(bytes28 => bytes32) public twapObservations;
 
     event Test(bytes28);
@@ -86,7 +89,12 @@ contract UniswapV3Oracle {
         }
     }
 
-    /// @dev We provide the time weighted average tick and time weighted average inverse liquidity for convenience, but return the full Observations in case developers want more fine-grained calculations of the oracle observations
+    /// @notice Verify a ZK proof of a Uniswap V3 TWAP oracle observation and verifies the validity of checkpoint blockhashes using Axiom. 
+    ///         Caches the [hash of] raw observations for future use.
+    ///         Returns the time (seconds) weighted average tick (geometric mean) and the time (seconds) weight average liquidity (harmonic mean).
+    /// @dev    We provide the time weighted average tick and time weighted average inverse liquidity for convenience, but return 
+    ///         the full Observations in case developers want more fine-grained calculations of the oracle observations.
+    ///         For example the price can be calculated from the tick by P = 1.0001^tick
     function verifyUniswapV3TWAP(
         IAxiomV0.BlockHashWitness calldata startBlock,
         IAxiomV0.BlockHashWitness calldata endBlock,
@@ -94,8 +102,8 @@ contract UniswapV3Oracle {
     )
         external
         returns (
-            int56 tickTwap,
-            uint160 twaInverseLiquidityX128,
+            int56 twaTick,
+            uint160 twaLiquidity,
             Oracle.Observation memory startObservation,
             Oracle.Observation memory endObservation
         )
@@ -138,10 +146,10 @@ contract UniswapV3Oracle {
 
         uint32 secondsElapsed = endObservation.blockTimestamp - startObservation.blockTimestamp;
         // floor division
-        tickTwap = (endObservation.tickCumulative - startObservation.tickCumulative) / int56(uint56(secondsElapsed));
+        twaTick = (endObservation.tickCumulative - startObservation.tickCumulative) / int56(uint56(secondsElapsed));
         // floor division
-        twaInverseLiquidityX128 = (
+        twaLiquidity = ((uint160(1) << 128) * secondsElapsed) / (
             endObservation.secondsPerLiquidityCumulativeX128 - startObservation.secondsPerLiquidityCumulativeX128
-        ) / uint160(secondsElapsed);
+        );
     }
 }

@@ -75,3 +75,11 @@ cargo build --bin v3_twap_server --features "server" --no-default-features --rel
 ```
 
 The binary is located in `./target/release/v3_twap_server`. You must start the binary from the `circuits` directory for file paths to work appropriately. Running the binary will start the server on `localhost:8000`.
+
+Once the server is running, you can query it via
+
+```bash
+curl -X POST -i "http://localhost:8000/uniswap-v3" -H "Content-Type: application/json" -d @data/task.t.json
+```
+
+where [`task.t.json`](./circuits/data/task.t.json) is a JSON file with an example request.

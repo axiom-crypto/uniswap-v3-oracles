@@ -77,13 +77,13 @@ contract UniswapTwapTest is Test {
         });
 
         (
-            int56 tickTwap,
-            uint160 twaInverseLiquidityX128,
+            int56 twaTick,
+            uint160 twaLiquidity,
             Oracle.Observation memory startObservation,
             Oracle.Observation memory endObservation
         ) = oracle.verifyUniswapV3TWAP(startBlock, endBlock, proof);
-        emit log_int(tickTwap);
-        emit log_uint(twaInverseLiquidityX128);
+        emit log_int(twaTick);
+        emit log_uint(twaLiquidity);
         startObservation.initialized = false;
         endObservation.initialized = false;
         emit log_bytes32(startObservation.pack());
