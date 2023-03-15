@@ -27,6 +27,10 @@ struct Cli {
     create_contract: bool,
     #[arg(long = "readonly")]
     readonly: bool,
+    #[arg(short, long = "config-path")]
+    config_path: Option<PathBuf>,
+    #[arg(short, long = "data-path")]
+    data_path: Option<PathBuf>,
 }
 
 fn main() {
@@ -40,8 +44,8 @@ fn main() {
         args.network,
         production,
         args.readonly,
-        PathBuf::from("configs"),
-        PathBuf::from("data"),
+        args.config_path.unwrap_or_else(|| PathBuf::from("configs")),
+        args.data_path.unwrap_or_else(|| PathBuf::from("data")),
     );
 
     assert!(
