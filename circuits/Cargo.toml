@@ -1,0 +1,61 @@
+[package]
+name = "axiom-uniswap-oracles"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "v3_twap_server"
+required-features = ["server"]
+
+[dependencies]
+log = "0.4"
+env_logger = "0.10"
+rand_core = "0.6"
+clap = { version = "4.1", features = ["derive"] }
+clap-num = "1.0.2"
+
+axiom-scaffold = { git = "https://github.com/axiom-crypto/axiom-scaffold.git", default-features = false }
+
+ethers-core = { version = "1.0.2" }
+ethers-providers = { version = "1.0.2" }
+tokio = { version = "1.26", features = ["macros"] }
+
+serde = { version = "1.0", default-features = false, features = ["derive"], optional = true }
+rocket = { version = "0.4", optional = true }
+rocket_contrib = { version = "0.4", optional = true, default-features = false, features = ["json"]}
+
+[dev-dependencies]
+test-log = "0.2.11"
+ark-std = { version = "0.3.0", features = ["print-trace"] }
+
+[features]
+default = ["axiom-scaffold/display"]
+production = ["axiom-scaffold/production"]
+server = ["dep:rocket", "dep:rocket_contrib", "dep:serde", "production"]
+
+[profile.dev]
+opt-level = 3
+debug = 1 # change to 0 or 2 for more or less debug info
+overflow-checks = true
+incremental = true
+
+# Local "release" mode, more optimized than dev but faster to compile than release
+[profile.local]
+inherits = "dev"
+opt-level = 3
+# Set this to 1 or 2 to get more useful backtraces
+debug = 1
+debug-assertions = false
+panic = 'unwind'
+# better recompile times
+incremental = true
+lto = "thin"
+codegen-units = 16
+
+[profile.release]
+opt-level = 3
+debug = false
+debug-assertions = false
+lto = "fat"
+panic = "abort"
+incremental = false
