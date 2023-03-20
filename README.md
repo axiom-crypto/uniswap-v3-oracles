@@ -47,6 +47,25 @@ For verbose logging of events and gas tracking, run
 forge test -vvvv
 ```
 
+### Local testing with mainnet fork
+
+We can test contract deployment with a local fork of Ethereum mainnet using Foundry [anvil](https://book.getfoundry.sh/reference/anvil/). To start the local anvil node by forking mainnet from a specified block number, make sure `.env` is exported, then run:
+
+```bash
+bash script/start_anvil.sh
+```
+
+in the `contracts` directory. Now that anvil is running, we can deploy both the SNARK verifier and the `UniswapV3Oracle` contract by running
+
+```bash
+# MAKE SURE .env IS EXPORTED
+bash script/deploy_local.sh
+```
+
+from the `contracts` directory. This will print out verbose logs of the deployment, including the addresses of the **two** deployed contracts (SNARK verifier and `UniswapV3Oracle`).
+
+Note that [`UniswapV3Oracle.s.sol`](contracts/script/UniswapV3Oracle.s.sol) is using [`deployed_verifier.yul`](circuits/data/deployed_verifier.yul) as the verifier contract. This depends on the universal trusted setup used, so you may need to change it for local testing.
+
 ## ZK Proving
 
 In the `circuits` directory, run:
