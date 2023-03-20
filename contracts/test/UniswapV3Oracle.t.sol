@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT 
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
@@ -82,8 +82,9 @@ contract UniswapTwapTest is Test {
             Oracle.Observation memory startObservation,
             Oracle.Observation memory endObservation
         ) = oracle.verifyUniswapV3TWAP(startBlock, endBlock, proof);
-        emit log_int(twaTick);
-        emit log_uint(twaLiquidity);
+
+        require(twaTick == 199079);
+        require(twaLiquidity == 120307195028516883);
         startObservation.initialized = false;
         endObservation.initialized = false;
         emit log_bytes32(startObservation.pack());

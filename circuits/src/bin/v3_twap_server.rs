@@ -9,6 +9,7 @@ use axiom_scaffold::axiom_eth::{
     Network,
 };
 use axiom_uniswap_oracles::v3_twap::helpers::{UniswapTwapTask, UniswapV3TwapScheduler};
+use clap::Parser;
 use ethers_core::types::Address;
 use rocket::State;
 use rocket_contrib::json::Json;
@@ -60,13 +61,24 @@ fn serve(task: Json<Task>, oracle: State<UniswapV3TwapScheduler>) -> Result<Stri
     Ok(calldata)
 }
 
+#[derive(Parser, Debug)]
+struct Cli {
+    #[arg(long, default_value_t = Network::Mainnet)]
+    network: Network,
+    #[arg(short, long = "config-path")]
+    config_path: Option<PathBuf>,
+    #[arg(short, long = "data-path")]
+    data_path: Option<PathBuf>,
+}
+
 fn main() {
+    let args = Cli::parse();
     let oracle = UniswapV3TwapScheduler::new(
-        Network::Mainnet,
+        args.network,
         true,
         true,
-        PathBuf::from("configs"),
-        PathBuf::from("data"),
+        args.config_path.unwrap_or_else(|| PathBuf::from("configs")),
+        args.data_path.unwrap_or_else(|| PathBuf::from("data")),
     );
     rocket::ignite().manage(oracle).mount("/", routes![serve]).launch();
 }
