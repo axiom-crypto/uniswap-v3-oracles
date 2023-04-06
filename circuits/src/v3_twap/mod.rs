@@ -74,11 +74,22 @@ impl<F: Field> UniswapV3TwapOracle<F> for AxiomChip<F> {
     ) -> OracleObservation<F> {
         assert!(F::CAPACITY >= 248, "Field needs to have at least 248 bits capacity");
         let slot = H256::from_low_u64_be(UNISWAP_V3_POOL_OBSERVATION0_SLOT);
-        let EIP1186ResponseDigest { block_hash, block_number, address, mut slots_values } =
-            self.eth_getProof(provider, pool_address, vec![slot], block_number);
+        let EIP1186ResponseDigest {
+            block_hash,
+            block_number,
+            address,
+            mut slots_values,
+            address_is_empty,
+            slot_is_empty,
+        } = self.eth_getProof(provider, pool_address, vec![slot], block_number);
         assert_eq!(slots_values.len(), 1);
+        assert_eq!(slot_is_empty.len(), 1);
         let (slot, value) = slots_values.pop().unwrap();
         let ctx = &mut self.ctx();
+        // address should not be empty
+        self.gate().assert_is_const(ctx, &address_is_empty, &F::zero());
+        // slot should not be empty
+        self.gate().assert_is_const(ctx, &slot_is_empty[0], &F::zero());
         // slot should equal H256(UNISWAP_V3_POOL_OBSERVATIONS_SLOT)
         self.gate().assert_is_const(ctx, &slot[0], &F::zero());
         self.gate().assert_is_const(ctx, &slot[1], &F::from(UNISWAP_V3_POOL_OBSERVATION0_SLOT));

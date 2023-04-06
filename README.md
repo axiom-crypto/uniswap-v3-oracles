@@ -15,6 +15,17 @@ cd uniswap-v3-oracles
 
 Optional: symlink existing `params` folder to `circuits/params` to avoid regenerating NOT FOR PRODUCTION trusted setup files. (It's fine to ignore this if you don't know what it means.)
 
+If you want to use the same [universal trusted setup](https://docs.axiom.xyz/axiom-architecture/how-axiom-works/kzg-trusted-setup) as the one we use, so that the SNARK verifier matches the one deployed on mainnet, then you can download the following trusted setup files:
+
+```bash
+# start in uniswap-v3-oracles directory
+cd circuits
+mkdir -p params
+wget https://axiom-crypto.s3.amazonaws.com/params/kzg_bn254_18.srs -O params/kzg_bn254_18.srs
+wget https://axiom-crypto.s3.amazonaws.com/params/kzg_bn254_23.srs -O params/kzg_bn254_23.srs
+cd ..
+```
+
 ### RPC URL
 
 ```bash
@@ -85,7 +96,7 @@ We provide the [Yul code](./circuits/data/deployed_verifier.yul) for the verifie
 
 **Note:** The proof generation requires up to 40GB of RAM to complete. If you do not have enough RAM, you can [set up swap](https://www.digitalocean.com/community/tutorials/how-to-add-swap-space-on-ubuntu-20-04) to compensate (this is done automatically on Macs) at the tradeoff of slower runtimes.
 
-For a technical overview of what the circuit is doing, see [here](https://hackmd.io/@jpw/BJEYSD8k2).
+For a technical overview of what the circuit is doing, see [here](https://hackmd.io/@axiom/BJEYSD8k2).
 
 ### (Optional) Server
 
