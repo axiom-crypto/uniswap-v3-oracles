@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT 
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
@@ -26,6 +26,23 @@ contract UniswapTwapTest is Test {
         mainnetForkId = vm.createFork("mainnet", 16_800_000);
         vm.makePersistent(verifierAddress);
         vm.makePersistent(address(oracle));
+    }
+
+    function testUpdateAxiomAddress() public {
+        oracle.updateAxiomAddress(address(1));
+
+        vm.prank(address(yulDeployer));
+        vm.expectRevert("Ownable: caller is not the owner");
+        oracle.updateAxiomAddress(address(0));
+    }
+
+    function testUpdateSnarkVerifierAddress() public {
+        address oracleAddress = address(oracle);
+        oracle.updateSnarkVerifierAddress(address(888));
+
+        vm.prank(address(oracle));
+        vm.expectRevert("Ownable: caller is not the owner");
+        oracle.updateSnarkVerifierAddress(oracleAddress);
     }
 
     function testVerifyUniswapV3TWAP() public {
@@ -89,7 +106,16 @@ contract UniswapTwapTest is Test {
         endObservation.initialized = false;
         emit log_bytes32(startObservation.pack());
         emit log_bytes32(endObservation.pack());
-        require(oracle.twapObservations(bytes28(abi.encodePacked(address(0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640), startBlock.blockNumber, endBlock.blockNumber)))
-        == keccak256(abi.encodePacked(startObservation.pack(), endObservation.pack())));
+        require(
+            oracle.twapObservations(
+                bytes28(
+                    abi.encodePacked(
+                        address(0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640),
+                        startBlock.blockNumber,
+                        endBlock.blockNumber
+                    )
+                )
+            ) == keccak256(abi.encodePacked(startObservation.pack(), endObservation.pack()))
+        );
     }
 }
