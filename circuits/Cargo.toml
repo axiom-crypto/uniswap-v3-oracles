@@ -14,10 +14,10 @@ rand_core = "0.6"
 clap = { version = "4.1", features = ["derive"] }
 clap-num = "1.0.2"
 
-axiom-scaffold = { git = "https://github.com/axiom-crypto/axiom-scaffold.git", default-features = false }
+axiom-scaffold = { git = "https://github.com/axiom-crypto/axiom-scaffold.git", tag = "v2023_04_06", default-features = false }
 
-ethers-core = { version = "1.0.2" }
-ethers-providers = { version = "1.0.2" }
+ethers-core = { version = "2.0.2" }
+ethers-providers = { version = "2.0.2" }
 tokio = { version = "1.26", features = ["macros"] }
 
 serde = { version = "1.0", default-features = false, features = ["derive"], optional = true }
