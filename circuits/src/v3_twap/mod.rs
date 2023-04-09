@@ -124,6 +124,14 @@ impl<F: Field> UniswapV3TwapOracle<F> for AxiomChip<F> {
 }
 
 #[derive(Clone, Debug)]
+/// Circuit to prove the TWAP between two blocks for a specific UniswapV3Pool
+///
+/// Public instances: total 7 field elements
+/// * 0: `pool_address . start_block_number . end_block_number` is `20 + 4 + 4 = 28` bytes, packed into a single field element
+/// * 1..3: `start_block_hash` (32 bytes) is split into two field elements (hi, lo u128)
+/// * 3..5: `end_block_hash` (32 bytes) is split into two field elements (hi, lo u128)
+/// * 5: `start_observation` (31 bytes) is single field element, concatenation of `secondsPerLiquidityCumulativeX128 . tickCumulative . blockTimestamp`
+/// * 6: `end_observation` (31 bytes) is single field element, concatenation of `secondsPerLiquidityCumulativeX128 . tickCumulative . blockTimestamp`
 pub struct UniswapV3TwapCircuit {
     pub provider: Arc<Provider<Http>>,
     pub pool_address: Address,
@@ -146,12 +154,6 @@ impl UniswapV3TwapCircuit {
             )
             .try_into()
             .unwrap();
-        // Public instances: total 7 field elements
-        // 0: `pool_address . start_block_number . end_block_number` is `20 + 4 + 4 = 28` bytes, packed into a single field element
-        // 1..3: `start_block_hash` (32 bytes) is split into two field elements (hi, lo u128)
-        // 3..5: `end_block_hash` (32 bytes) is split into two field elements (hi, lo u128)
-        // 5: `start_observation` (31 bytes) is single field element, concatenation of `secondsPerLiquidityCumulativeX128 . tickCumulative . blockTimestamp`
-        // 6: `end_observation` (31 bytes) is single field element, concatenation of `secondsPerLiquidityCumulativeX128 . tickCumulative . blockTimestamp`
         assert!(F::CAPACITY >= 248, "Field needs to have at least 248 bits capacity");
         let mut aux = axiom.ctx();
         let ctx = &mut aux;
